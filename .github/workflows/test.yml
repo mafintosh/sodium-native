@@ -1,0 +1,27 @@
+name: Run tests
+on:  
+  push:
+    pull_request:
+      branches:
+        - master
+jobs:
+  test:
+    strategy:
+      matrix: 
+        os: [windows-latest, macos-latest, ubuntu-latest]
+        node-version: ['10.x', '12.x', '14.x']
+    runs-on: ${{ matrix.os }}
+    name: Build 
+    steps:
+      - uses: actions/checkout@v2.1.0
+      - uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version}} 
+      - run: brew install autoconf automake libtool
+        if: ${{ matrix.os == 'macos-latest' }}
+      - run: npm run fetch-libsodium
+      - run: npm run prebuild-ia32
+        if: ${{ matrix.os == 'windows-latest'}}
+      - run: npm install
+      - run: npm dev
+      - run: npm test
